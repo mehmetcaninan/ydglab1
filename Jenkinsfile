@@ -5,31 +5,34 @@ pipeline {
         }
     }
 
-    parameters {
-        string(name: 'TEST_URL', defaultValue: 'https://example.com', description: 'Test edilecek URL')
-    }
-
     stages {
         stage('Test') {
             steps {
-                echo "JUnit ile ${params.TEST_URL} adresine erişim testi yapılıyor"
-                sh "mvn -B -Dtest.url=${params.TEST_URL} test"
+                echo "Branch: ${env.BRANCH_NAME}"
+
+                script {
+                    if (env.BRANCH_NAME == 'test') {
+                        error "TEST branch için pipeline bilinçli olarak fail edildi"
+                    }
+                }
+
+                sh 'mvn -B test'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploy aşaması (şimdilik pas geçildi)'
+                echo 'Deploy aşaması'
             }
         }
     }
 
     post {
         failure {
-            echo 'Pipeline başarısız oldu — deploy atlanacak.'
+            echo 'Pipeline FAIL oldu (beklenen davranış)'
         }
         success {
-            echo 'Pipeline başarıyla tamamlandı.'
+            echo 'Pipeline SUCCESS'
         }
     }
 }
