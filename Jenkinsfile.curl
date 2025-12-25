@@ -1,0 +1,34 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Check URL (curl)') {
+      steps {
+        echo 'Checking https://example.com reachability via curl'
+        script {
+          def status = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' https://example.com").trim()
+          def code = status.toInteger()
+          if (code < 200 || code >= 300) {
+            error("URL not reachable: HTTP ${code}")
+          } else {
+            echo "URL reachable: HTTP ${code}"
+          }
+        }
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        echo 'Tests passed — running deploy step'
+        sh 'echo "Deploy step placeholder: buraya gerçek deploy komutunuzu koyun."'
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo 'Pipeline başarısız oldu — deploy atlandı.'
+    }
+  }
+}
+
